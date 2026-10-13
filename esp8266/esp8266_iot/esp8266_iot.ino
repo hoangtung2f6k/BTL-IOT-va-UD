@@ -41,7 +41,11 @@ PubSubClient mqttClient(espClient);
 bool lightOn = false;
 bool fanOn   = false;
 bool acOn    = false;
-bool manualMode = false;
+// Khoi dong o che do THU CONG: cam dien vao mach khong tu bat thiet bi nao.
+// Truoc day mac dinh la false (tu dong), nen vua cap nguon la quat va dieu hoa
+// bat ngay khi phong qua 28 do C / 62% am - gan nhu luc nao cung dung o VN.
+// Muon chay theo nguong thi go "AUTO" trong Serial Monitor.
+bool manualMode = true;
 
 // Luu trang thai cu de so sanh, chi gui MQTT khi co thay doi
 bool prevLightOn = false;
@@ -218,7 +222,9 @@ void setup() {
   Serial.println("  DEN ON / DEN OFF");
   Serial.println("  QUAT ON / QUAT OFF");
   Serial.println("  AC ON / AC OFF");
-  Serial.println("  AUTO  (quay lai tu dong)");
+  Serial.println("  AUTO  (chuyen sang che do tu dong)");
+  Serial.println("------------------------------------------");
+  Serial.println("Che do hien tai: THU CONG - khong tu bat gi ca.");
   Serial.println("==========================================");
 }
 
