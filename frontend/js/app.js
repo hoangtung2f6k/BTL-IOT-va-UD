@@ -101,10 +101,6 @@ const humidData = [];
 const lightData = [];
 const MAX_CHART_POINTS = 30;
 
-// Thời điểm của bản ghi cảm biến mới nhất (lấy từ dữ liệu, không phải lúc gọi API)
-let latestReadingAt = null;
-const ESP_TIMEOUT_MS = 15000;
-
 function initChart() {
     const ctx = document.getElementById('sensorChart').getContext('2d');
     const line = (label, data, color) => ({
@@ -200,12 +196,6 @@ async function loadChartHistory() {
 // ============================================
 // CẢM BIẾN - SỐ LIỆU MỚI NHẤT
 // ============================================
-function updateEspAlert() {
-    const alertBox = document.getElementById('esp-alert');
-    const stale = !latestReadingAt || (Date.now() - latestReadingAt > ESP_TIMEOUT_MS);
-    alertBox.style.display = stale ? 'flex' : 'none';
-}
-
 async function fetchLatestSensor() {
     try {
         const res = await apiFetch('/sensors/latest');
@@ -215,11 +205,6 @@ async function fetchLatestSensor() {
         document.getElementById('temp-value').innerHTML = num(data.temperature) + '<span class="unit">°C</span>';
         document.getElementById('humid-value').innerHTML = num(data.humidity) + '<span class="unit">%</span>';
         document.getElementById('light-value').innerHTML = num(data.light, 0) + '<span class="unit"> lux</span>';
-
-        // Mốc thời gian lấy từ chính bản ghi -> mạch tắt là biết ngay,
-        // khác với việc chỉ dựa vào "gọi API có thành công hay không".
-        latestReadingAt = new Date(data.created_at).getTime();
-        updateEspAlert();
 
         pushPoint(data);
         sensorChart.update();
@@ -494,15 +479,6 @@ let sensorPage = 1;
 let sensorLimit = 10;
 let sensorSortBy = 'created_at';
 let sensorSortOrder = 'DESC';
-let sensorFilterTimer = null;
-
-// Ô chọn lọc ngay khi đổi; ô gõ chữ thì đợi 400ms ngừng gõ mới gọi API,
-// nếu không mỗi phím lại là một lượt truy vấn CSDL.
-function debouncedSensorSearch() {
-    clearTimeout(sensorFilterTimer);
-    sensorFilterTimer = setTimeout(searchSensorData, 400);
-}
-
 function changeSensorLimit() {
     sensorLimit = parseInt(val('sensor-limit'), 10) || 10;
     sensorPage = 1; // đổi số dòng/trang thì số trang đổi theo, quay về trang đầu
@@ -606,13 +582,6 @@ let actionPage = 1;
 let actionLimit = 10;
 let actionSortBy = 'created_at';
 let actionSortOrder = 'DESC';
-let actionFilterTimer = null;
-
-function debouncedActionSearch() {
-    clearTimeout(actionFilterTimer);
-    actionFilterTimer = setTimeout(searchActionData, 400);
-}
-
 function changeActionLimit() {
     actionLimit = parseInt(val('action-limit'), 10) || 10;
     actionPage = 1;
@@ -787,6 +756,5 @@ function renderPagination(containerId, pagination, onClick) {
 
     setInterval(fetchLatestSensor, 5000);
     setInterval(loadDeviceStatus, 5000);
-    setInterval(updateEspAlert, 3000);
 
 })();

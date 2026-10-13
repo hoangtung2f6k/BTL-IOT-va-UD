@@ -42,12 +42,6 @@
                 </div>
             </div>
 
-            <!-- ESP CONNECTION ALERT -->
-            <div id="esp-alert" class="esp-alert">
-                <i class="fas fa-triangle-exclamation"></i>
-                <span>Mất kết nối ESP8266 — không nhận được dữ liệu cảm biến.</span>
-            </div>
-
             <div class="dashboard-grid">
                 <!-- SENSORS & CHART COLUMN -->
                 <div class="left-column">
@@ -162,7 +156,7 @@
             <div class="filter-bar">
                 <div class="filter-field grow">
                     <label for="sensor-f-field">Lọc theo</label>
-                    <select id="sensor-f-field" onchange="searchSensorData()">
+                    <select id="sensor-f-field">
                         <option value="">Tất cả</option>
                         <option value="temperature">Nhiệt độ</option>
                         <option value="humidity">Độ ẩm</option>
@@ -172,7 +166,7 @@
                 </div>
                 <div class="filter-field grow">
                     <label for="sensor-f-value">Value</label>
-                    <input type="text" id="sensor-f-value" oninput="debouncedSensorSearch()">
+                    <input type="text" id="sensor-f-value" onkeydown="if (event.key === 'Enter') searchSensorData()">
                 </div>
                 <button class="btn-search" onclick="searchSensorData()">Search</button>
                 <button class="btn-reset" onclick="resetSensorFilters()">Reset</button>
@@ -219,13 +213,13 @@
             <div class="filter-bar">
                 <div class="filter-field grow">
                     <label for="action-f-device">Device</label>
-                    <select id="action-f-device" onchange="searchActionData()">
+                    <select id="action-f-device">
                         <option value="">All Devices</option>
                     </select>
                 </div>
                 <div class="filter-field grow">
                     <label for="action-f-action">Action</label>
-                    <select id="action-f-action" onchange="searchActionData()">
+                    <select id="action-f-action">
                         <option value="">All Actions</option>
                         <option value="ON">ON</option>
                         <option value="OFF">OFF</option>
@@ -233,7 +227,7 @@
                 </div>
                 <div class="filter-field grow">
                     <label for="action-f-status">Status</label>
-                    <select id="action-f-status" onchange="searchActionData()">
+                    <select id="action-f-status">
                         <option value="">All Status</option>
                         <option value="SUCCESS">Thành công (ON/OFF)</option>
                         <option value="PENDING">Đang chờ (loading)</option>
@@ -243,7 +237,7 @@
                 </div>
                 <div class="filter-field grow">
                     <label for="action-f-time">Time</label>
-                    <input type="text" id="action-f-time" oninput="debouncedActionSearch()">
+                    <input type="text" id="action-f-time" onkeydown="if (event.key === 'Enter') searchActionData()">
                 </div>
                 <button class="btn-search" onclick="searchActionData()">Search</button>
                 <button class="btn-reset" onclick="resetActionFilters()">Reset</button>
