@@ -78,7 +78,7 @@ input:checked + .slider:before { transform: translateX(20px); }
 input:disabled + .slider { opacity: 0.5; cursor: not-allowed; }
 
 /* FILTERS */
-.filter-bar { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 14px; background: #1c2438; border-radius: 12px; padding: 18px; margin: 20px 0 10px; }
+.filter-bar { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 14px; background: #1c2438; border-radius: 12px; padding: 18px; margin: 20px 0; }
 .filter-field { display: flex; flex-direction: column; gap: 6px; }
 .filter-field label { font-size: 11px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; color: #94a3b8; }
 .filter-field.grow { flex: 1; min-width: 180px; }
@@ -86,8 +86,6 @@ input:disabled + .slider { opacity: 0.5; cursor: not-allowed; }
 .filter-field input:focus, .filter-field select:focus { outline: none; border-color: #f97316; }
 /* Ô Time gõ sai định dạng -> viền đỏ, giá trị đó không được gửi lên server */
 .filter-field input.invalid { border-color: #f43f5e; background: rgba(244,63,94,0.08); }
-.filter-hint { font-size: 12px; color: #64748b; margin-bottom: 16px; }
-.filter-hint code { background: #1c2438; padding: 2px 6px; border-radius: 4px; color: #cbd5e1; font-size: 12px; }
 
 /* CHÂN BẢNG: số bản ghi - số dòng mỗi trang - phân trang */
 .table-footer { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; }

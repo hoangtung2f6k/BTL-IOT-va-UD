@@ -168,17 +168,13 @@
                 </div>
                 <div class="filter-field grow">
                     <label for="sensor-f-value">Value</label>
-                    <input type="text" id="sensor-f-value" placeholder="VD: 28.5" oninput="debouncedSensorSearch()">
+                    <input type="text" id="sensor-f-value" oninput="debouncedSensorSearch()">
                 </div>
                 <div class="filter-field grow">
                     <label for="sensor-f-time">Time</label>
-                    <input type="text" id="sensor-f-time" placeholder="1/1/2025" oninput="debouncedSensorSearch()">
+                    <input type="text" id="sensor-f-time" oninput="debouncedSensorSearch()">
                 </div>
             </div>
-            <p class="filter-hint">
-                Ô <strong>Time</strong> nhập dạng chuỗi <code>ngày/tháng/năm</code> — ví dụ <code>1/1/2025</code> (lọc trọn ngày đó),
-                kèm giờ <code>1/1/2025 14:30</code>, hoặc một khoảng <code>1/1/2025 - 31/12/2025</code>.
-            </p>
 
             <div class="table-container">
                 <table id="sensor-table">
@@ -245,13 +241,9 @@
                 </div>
                 <div class="filter-field grow">
                     <label for="action-f-time">Time</label>
-                    <input type="text" id="action-f-time" placeholder="1/1/2025" oninput="debouncedActionSearch()">
+                    <input type="text" id="action-f-time" oninput="debouncedActionSearch()">
                 </div>
             </div>
-            <p class="filter-hint">
-                Ô <strong>Time</strong> nhập dạng chuỗi <code>ngày/tháng/năm</code> — ví dụ <code>1/1/2025</code> (lọc trọn ngày đó),
-                kèm giờ <code>1/1/2025 14:30</code>, hoặc một khoảng <code>1/1/2025 - 31/12/2025</code>.
-            </p>
 
             <div class="table-container">
                 <table id="action-table">
