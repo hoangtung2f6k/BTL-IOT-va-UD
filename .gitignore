@@ -1,0 +1,28 @@
+# ===== Thư viện cài lại được bằng npm install =====
+node_modules/
+
+# ===== Cấu hình riêng của từng máy =====
+# Chép backend/.env.example thành backend/.env rồi sửa cho khớp máy mình.
+.env
+
+# ===== Bộ cài, không thuộc mã nguồn =====
+# xampp-...-installer.exe nặng 150 MB, vượt giới hạn 100 MB của GitHub.
+*.exe
+
+# ===== File giải nén / nén lại từ tài liệu =====
+srs.zip
+srs_extracted/
+
+# ===== Tài liệu tham khảo tải về, không phải bài của mình =====
+*Studocu.pdf
+Ptit Iot _ PDF.pdf
+
+# ===== Linh tinh =====
+*.log
+npm-debug.log*
+.DS_Store
+Thumbs.db
+
+# ===== File mat khau cua broker Mosquitto =====
+# Tao lai khi can:  mosquitto_passwd -c backend/config/pwfile admin
+backend/config/pwfile

@@ -1,0 +1,159 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "AURA HOME IoT API",
+    "version": "1.0.0",
+    "description": "Tài liệu API cho Hệ thống giám sát thông số môi trường và điều khiển thiết bị AURA HOME."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000/api",
+      "description": "Local Development Server"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Dán token lấy từ POST /auth/login (chỉ phần chuỗi, không cần gõ chữ Bearer)."
+      }
+    }
+  },
+  "paths": {
+    "/auth/login": {
+      "post": {
+        "summary": "Đăng nhập hệ thống — lấy token để dùng cho /devices/control",
+        "tags": ["Authentication"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "username": { "type": "string", "example": "admin" },
+                  "password": { "type": "string", "example": "123456" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Đăng nhập thành công. Chép giá trị \"token\" rồi bấm nút Authorize ở đầu trang." },
+          "401": { "description": "Sai tài khoản hoặc mật khẩu." }
+        }
+      }
+    },
+    "/sensors/latest": {
+      "get": {
+        "summary": "Lấy dữ liệu cảm biến mới nhất",
+        "tags": ["Sensors"],
+        "responses": {
+          "200": { "description": "Dữ liệu nhiệt độ, độ ẩm, ánh sáng hiện tại." }
+        }
+      }
+    },
+    "/sensors/list": {
+      "get": {
+        "summary": "Danh sách cảm biến đã khai báo (đổ vào ô lọc Device ID)",
+        "tags": ["Sensors"],
+        "responses": {
+          "200": { "description": "Mảng cảm biến: id, room_id, type, unit, description." }
+        }
+      }
+    },
+    "/sensors": {
+      "get": {
+        "summary": "Lấy lịch sử dữ liệu cảm biến (mỗi dòng 1 lần đo của 1 cảm biến)",
+        "tags": ["Sensors"],
+        "parameters": [
+          { "name": "page", "in": "query", "schema": { "type": "integer", "default": 1 } },
+          { "name": "limit", "in": "query", "schema": { "type": "integer", "default": 10 } },
+          { "name": "deviceId", "in": "query", "description": "Lọc theo ID cảm biến", "schema": { "type": "integer" } },
+          { "name": "sensorType", "in": "query", "description": "temperature | humidity | light", "schema": { "type": "string" } },
+          { "name": "value", "in": "query", "description": "Khớp chứa, ví dụ 28 ra 28.7", "schema": { "type": "string" } },
+          { "name": "from", "in": "query", "description": "Từ ngày, dạng chuỗi d/m/yyyy (VD 1/1/2025)", "schema": { "type": "string" } },
+          { "name": "to", "in": "query", "description": "Đến ngày, dạng chuỗi d/m/yyyy (VD 31/12/2025)", "schema": { "type": "string" } },
+          { "name": "sortBy", "in": "query", "description": "id | device_id | sensor_type | value | created_at", "schema": { "type": "string", "default": "created_at" } },
+          { "name": "sortOrder", "in": "query", "schema": { "type": "string", "default": "DESC" } }
+        ],
+        "responses": {
+          "200": { "description": "Danh sách lịch sử cảm biến: device_id, sensor_type, unit, value, created_at." }
+        }
+      }
+    },
+    "/devices/control": {
+      "post": {
+        "summary": "Điều khiển BẬT/TẮT thiết bị (cần đăng nhập)",
+        "tags": ["Devices"],
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "device": { "type": "string", "example": "den" },
+                  "action": { "type": "string", "example": "ON" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Đã gửi lệnh qua MQTT, trả về requestId. Dùng GET /devices/action/{requestId} để xem mạch có xác nhận không." },
+          "400": { "description": "Thiếu device/action, hoặc action không phải ON/OFF." },
+          "401": { "description": "Chưa đăng nhập (thiếu token) hoặc token hết hạn — bấm Authorize ở đầu trang." },
+          "404": { "description": "Không có thiết bị tên đó trong CSDL." },
+          "503": { "description": "Thiết bị đang offline, lệnh không được gửi đi." }
+        }
+      }
+    },
+    "/devices/action/{requestId}": {
+      "get": {
+        "summary": "Tra kết quả một lệnh đã gửi (frontend chờ mạch xác nhận)",
+        "tags": ["Devices"],
+        "parameters": [
+          { "name": "requestId", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": { "description": "status = PENDING | SUCCESS | FAILED | TIMEOUT, kèm error_message và current_state." },
+          "404": { "description": "Không tìm thấy request_id." }
+        }
+      }
+    },
+    "/devices/status": {
+      "get": {
+        "summary": "Lấy trạng thái thiết bị hiện tại (Khôi phục UI)",
+        "tags": ["Devices"],
+        "responses": {
+          "200": { "description": "Trả về trạng thái ON/OFF của Đèn, Quạt, Điều hòa." }
+        }
+      }
+    },
+    "/devices": {
+      "get": {
+        "summary": "Lấy lịch sử thao tác thiết bị (có phân trang & lọc)",
+        "tags": ["Devices"],
+        "parameters": [
+          { "name": "page", "in": "query", "schema": { "type": "integer", "default": 1 } },
+          { "name": "limit", "in": "query", "schema": { "type": "integer", "default": 10 } },
+          { "name": "id", "in": "query", "description": "Lọc theo ID bản ghi", "schema": { "type": "integer" } },
+          { "name": "device", "in": "query", "description": "den | quat | dieuhoa", "schema": { "type": "string" } },
+          { "name": "action", "in": "query", "description": "ON | OFF", "schema": { "type": "string" } },
+          { "name": "status", "in": "query", "description": "PENDING | SUCCESS | FAILED | TIMEOUT", "schema": { "type": "string" } },
+          { "name": "from", "in": "query", "description": "Từ ngày, dạng chuỗi d/m/yyyy (VD 1/1/2025)", "schema": { "type": "string" } },
+          { "name": "to", "in": "query", "description": "Đến ngày, dạng chuỗi d/m/yyyy (VD 31/12/2025)", "schema": { "type": "string" } },
+          { "name": "sortBy", "in": "query", "description": "id | device_name | action | status | created_at", "schema": { "type": "string", "default": "created_at" } },
+          { "name": "sortOrder", "in": "query", "schema": { "type": "string", "default": "DESC" } }
+        ],
+        "responses": {
+          "200": { "description": "Danh sách lịch sử thao tác: id, device_name, action, status, created_at, user_name (người thao tác)." }
+        }
+      }
+    }
+  }
+}

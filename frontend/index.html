@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AURA HOME - Smart Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo-icon"><i class="fas fa-home"></i></div>
+            <h2>AURA HOME</h2>
+        </div>
+        <ul class="nav-links">
+            <li class="active" onclick="showPage('dashboard', this)"><i class="fas fa-border-all"></i> Dashboard</li>
+            <li onclick="showPage('data-sensor', this)"><i class="fas fa-microchip"></i> Sensor Data</li>
+            <li onclick="showPage('action-history', this)"><i class="fas fa-clock"></i> Device History</li>
+            <li onclick="showPage('profile', this)"><i class="fas fa-user-circle"></i> Profile</li>
+            <li onclick="logout()" style="color: #f43f5e; margin-top: auto;"><i class="fas fa-sign-out-alt"></i> Đăng xuất</li>
+        </ul>
+        
+        <div class="user-profile">
+            <img src="https://ui-avatars.com/api/?name=User&background=random" alt="Avatar">
+            <div class="user-info">
+                <h4>—</h4>
+                <p>—</p>
+            </div>
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+        <!-- DASHBOARD PAGE -->
+        <div id="dashboard" class="page active">
+            <div class="page-header">
+                <div>
+                    <h1>Tổng quan</h1>
+                </div>
+            </div>
+
+            <!-- ESP CONNECTION ALERT -->
+            <div id="esp-alert" class="esp-alert">
+                <i class="fas fa-triangle-exclamation"></i>
+                <span>Mất kết nối ESP8266 — không nhận được dữ liệu cảm biến.</span>
+            </div>
+
+            <div class="dashboard-grid">
+                <!-- SENSORS & CHART COLUMN -->
+                <div class="left-column">
+                    <div class="sensor-cards">
+                        <!-- Temp -->
+                        <div class="sensor-card">
+                            <div class="sensor-header">
+                                <div class="icon-box temp-icon"><i class="fas fa-temperature-high"></i></div>
+                            </div>
+                            <p class="sensor-label">NHIỆT ĐỘ</p>
+                            <h3 id="temp-value">--<span class="unit">°C</span></h3>
+                        </div>
+                        <!-- Humid -->
+                        <div class="sensor-card">
+                            <div class="sensor-header">
+                                <div class="icon-box humid-icon"><i class="fas fa-tint"></i></div>
+                            </div>
+                            <p class="sensor-label">ĐỘ ẨM</p>
+                            <h3 id="humid-value">--<span class="unit">%</span></h3>
+                        </div>
+                        <!-- Light -->
+                        <div class="sensor-card">
+                            <div class="sensor-header">
+                                <div class="icon-box light-icon"><i class="far fa-lightbulb"></i></div>
+                            </div>
+                            <p class="sensor-label">ÁNH SÁNG</p>
+                            <h3 id="light-value">--<span class="unit"> lux</span></h3>
+                        </div>
+                    </div>
+
+                    <div class="chart-container">
+                        <div class="chart-header">
+                            <h3>Biểu đồ cảm biến</h3>
+                            <div class="chart-legend">
+                                <span onclick="toggleSeries(0, this)"><i class="fas fa-temperature-high" style="color:#f43f5e"></i> Nhiệt độ</span>
+                                <span onclick="toggleSeries(1, this)"><i class="fas fa-tint" style="color:#0ea5e9"></i> Độ ẩm</span>
+                                <span onclick="toggleSeries(2, this)"><i class="fas fa-lightbulb" style="color:#eab308"></i> Ánh sáng</span>
+                            </div>
+                        </div>
+                        <canvas id="sensorChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- CONTROL PANEL COLUMN -->
+                <div class="right-column">
+                    <div class="control-panel">
+                        <div class="panel-header">
+                            <h3>Điều khiển thiết bị</h3>
+                        </div>
+                        
+                        <!-- Device: Light -->
+                        <div class="device-item">
+                            <div class="device-icon light-icon"><i class="fas fa-lightbulb"></i></div>
+                            <div class="device-info">
+                                <h4>Đèn</h4>
+                            </div>
+                            <div class="device-actions">
+                                <i class="fas fa-spinner fa-spin loading-icon" id="loading-den" style="display: none;"></i>
+                                <label class="switch">
+                                    <input type="checkbox" id="switch-den" onchange="toggleDevice('den', this.checked)">
+                                    <span class="slider round"></span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Device: Fan -->
+                        <div class="device-item">
+                            <div class="device-icon fan-icon"><i class="fas fa-fan"></i></div>
+                            <div class="device-info">
+                                <h4>Quạt</h4>
+                            </div>
+                            <div class="device-actions">
+                                <i class="fas fa-spinner fa-spin loading-icon" id="loading-quat" style="display: none;"></i>
+                                <label class="switch">
+                                    <input type="checkbox" id="switch-quat" onchange="toggleDevice('quat', this.checked)">
+                                    <span class="slider round"></span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Device: AC -->
+                        <div class="device-item">
+                            <div class="device-icon ac-icon"><i class="fas fa-snowflake"></i></div>
+                            <div class="device-info">
+                                <h4>Điều hòa</h4>
+                            </div>
+                            <div class="device-actions">
+                                <i class="fas fa-spinner fa-spin loading-icon" id="loading-dieuhoa" style="display: none;"></i>
+                                <label class="switch">
+                                    <input type="checkbox" id="switch-dieuhoa" onchange="toggleDevice('dieuhoa', this.checked)">
+                                    <span class="slider round"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- DATA SENSOR PAGE -->
+        <div id="data-sensor" class="page" style="display:none;">
+            <div class="page-header">
+                <div>
+                    <h1>Sensor Data</h1>
+                    <p>Tra cứu và xem lại các giá trị cảm biến đã ghi</p>
+                </div>
+            </div>
+
+            <div class="filter-bar">
+                <div class="filter-field grow">
+                    <label for="sensor-f-type">Sensor Type</label>
+                    <select id="sensor-f-type" onchange="searchSensorData()">
+                        <option value="">All Sensors</option>
+                        <option value="temperature">Temperature — Nhiệt độ</option>
+                        <option value="humidity">Humidity — Độ ẩm</option>
+                        <option value="light">Light — Ánh sáng</option>
+                    </select>
+                </div>
+                <div class="filter-field grow">
+                    <label for="sensor-f-value">Value</label>
+                    <input type="text" id="sensor-f-value" placeholder="VD: 28.5" oninput="debouncedSensorSearch()">
+                </div>
+                <div class="filter-field grow">
+                    <label for="sensor-f-time">Time</label>
+                    <input type="text" id="sensor-f-time" placeholder="1/1/2025" oninput="debouncedSensorSearch()">
+                </div>
+            </div>
+            <p class="filter-hint">
+                Ô <strong>Time</strong> nhập dạng chuỗi <code>ngày/tháng/năm</code> — ví dụ <code>1/1/2025</code> (lọc trọn ngày đó),
+                kèm giờ <code>1/1/2025 14:30</code>, hoặc một khoảng <code>1/1/2025 - 31/12/2025</code>.
+            </p>
+
+            <div class="table-container">
+                <table id="sensor-table">
+                    <thead>
+                        <tr>
+                            <th data-field="id" onclick="sortSensorData('id')">ID</th>
+                            <th data-field="sensor_type" onclick="sortSensorData('sensor_type')">Sensor Type</th>
+                            <th data-field="value" onclick="sortSensorData('value')">Value</th>
+                            <th data-field="created_at" onclick="sortSensorData('created_at')">Time</th>
+                        </tr>
+                    </thead>
+                    <tbody id="sensor-tbody"></tbody>
+                </table>
+            </div>
+
+            <div class="table-footer">
+                <span class="result-count" id="sensor-count"></span>
+                <div class="page-size">
+                    <label for="sensor-limit">Number of lines</label>
+                    <select id="sensor-limit" onchange="changeSensorLimit()">
+                        <option value="10">10</option>
+                        <option value="25">25</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                    </select>
+                </div>
+                <div class="pagination" id="sensor-pagination"></div>
+            </div>
+        </div>
+
+        <!-- ACTION HISTORY PAGE -->
+        <div id="action-history" class="page" style="display:none;">
+            <div class="page-header">
+                <div>
+                    <h1>Device History</h1>
+                    <p>Tra cứu lịch sử bật/tắt thiết bị</p>
+                </div>
+            </div>
+
+            <div class="filter-bar">
+                <div class="filter-field grow">
+                    <label for="action-f-device">Device</label>
+                    <select id="action-f-device" onchange="searchActionData()">
+                        <option value="">All Devices</option>
+                    </select>
+                </div>
+                <div class="filter-field grow">
+                    <label for="action-f-action">Action</label>
+                    <select id="action-f-action" onchange="searchActionData()">
+                        <option value="">All Actions</option>
+                        <option value="ON">ON</option>
+                        <option value="OFF">OFF</option>
+                    </select>
+                </div>
+                <div class="filter-field grow">
+                    <label for="action-f-status">Status</label>
+                    <select id="action-f-status" onchange="searchActionData()">
+                        <option value="">All Status</option>
+                        <option value="SUCCESS">Thành công (ON/OFF)</option>
+                        <option value="PENDING">Đang chờ (loading)</option>
+                        <option value="FAILED">FAILED</option>
+                        <option value="TIMEOUT">TIMEOUT</option>
+                    </select>
+                </div>
+                <div class="filter-field grow">
+                    <label for="action-f-time">Time</label>
+                    <input type="text" id="action-f-time" placeholder="1/1/2025" oninput="debouncedActionSearch()">
+                </div>
+            </div>
+            <p class="filter-hint">
+                Ô <strong>Time</strong> nhập dạng chuỗi <code>ngày/tháng/năm</code> — ví dụ <code>1/1/2025</code> (lọc trọn ngày đó),
+                kèm giờ <code>1/1/2025 14:30</code>, hoặc một khoảng <code>1/1/2025 - 31/12/2025</code>.
+            </p>
+
+            <div class="table-container">
+                <table id="action-table">
+                    <thead>
+                        <tr>
+                            <th data-field="id" onclick="sortActionData('id')">ID</th>
+                            <th data-field="device_name" onclick="sortActionData('device_name')">Device</th>
+                            <th data-field="action" onclick="sortActionData('action')">Action</th>
+                            <th data-field="status" onclick="sortActionData('status')">Status</th>
+                            <th data-field="created_at" onclick="sortActionData('created_at')">Time</th>
+                            <th>Time phản hồi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="action-tbody"></tbody>
+                </table>
+            </div>
+
+            <div class="table-footer">
+                <span class="result-count" id="action-count"></span>
+                <div class="page-size">
+                    <label for="action-limit">Number of lines</label>
+                    <select id="action-limit" onchange="changeActionLimit()">
+                        <option value="10">10</option>
+                        <option value="25">25</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                    </select>
+                </div>
+                <div class="pagination" id="action-pagination"></div>
+            </div>
+        </div>
+
+        <!-- PROFILE PAGE -->
+        <div id="profile" class="page" style="display:none;">
+            <h2>Profile</h2>
+            <div class="profile-card" style="background:#1c2438; padding:30px; border-radius:12px; margin-top:20px; max-width: 500px;">
+                <div style="display: flex; align-items: center; gap: 20px; margin-bottom: 20px;">
+                    <img id="profile-avatar" src="https://ui-avatars.com/api/?name=User&background=random&size=128" alt="Profile" style="border-radius:50%;">
+                    <div>
+                        <h3 id="profile-name" style="font-size: 20px; margin-bottom: 8px;">Tên người dùng</h3>
+                        <p style="color:#94a3b8; margin:4px 0;"><i class="fas fa-id-card"></i> Mã SV: <span id="profile-code">Chưa cập nhật</span></p>
+                        <p style="color:#94a3b8; margin:4px 0;"><i class="fas fa-users"></i> Lớp: <span id="profile-class">Chưa cập nhật</span></p>
+                        <p style="color:#94a3b8; margin:4px 0;"><i class="fas fa-envelope"></i> Email: <span id="profile-email">Chưa cập nhật</span></p>
+                        <p style="color:#94a3b8; margin:4px 0;"><i class="fas fa-user-shield"></i> Vai trò: <span id="profile-role">Chưa cập nhật</span></p>
+                        <p style="color:#94a3b8; margin:4px 0;"><i class="fas fa-book"></i> Môn: IoT và Ứng dụng</p>
+                    </div>
+                </div>
+                <hr style="border-color: #334155; margin: 20px 0;">
+                <h4>Dự án & Tài liệu (Project Links)</h4>
+                <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 15px;">
+                    <a href="https://github.com/" target="_blank" style="color: #fff; text-decoration: none; display: flex; align-items: center; gap: 10px; background: #262f45; padding: 12px 16px; border-radius: 8px;">
+                        <i class="fab fa-github" style="font-size: 24px;"></i> 
+                        <span>Source code Github</span>
+                    </a>
+                    <a href="https://www.figma.com/design/7Psdj2WwJRMqJNTZJmBRsS/Untitled?node-id=0-1&amp;t=x6jQ9ItlYiBbPlTC-1" target="_blank" style="color: #fff; text-decoration: none; display: flex; align-items: center; gap: 10px; background: #262f45; padding: 12px 16px; border-radius: 8px;">
+                        <i class="fab fa-figma" style="font-size: 24px; color: #f24e1e;"></i> 
+                        <span>Bản thiết kế giao diện (Figma)</span>
+                    </a>
+                    <a href="http://localhost:3000/api-docs" target="_blank" style="color: #fff; text-decoration: none; display: flex; align-items: center; gap: 10px; background: #262f45; padding: 12px 16px; border-radius: 8px;">
+                        <i class="fas fa-server" style="font-size: 24px; color: #10b981;"></i>
+                        <span>Tài liệu API (Swagger UI)</span>
+                    </a>
+                    <!-- Dán link Postman đã publish vào href bên dưới.
+                         Lấy link: Postman -> Import -> Link -> http://localhost:3000/swagger.json
+                         -> chuột phải collection -> View documentation -> Publish. -->
+                    <a href="#" target="_blank" style="color: #fff; text-decoration: none; display: flex; align-items: center; gap: 10px; background: #262f45; padding: 12px 16px; border-radius: 8px;">
+                        <i class="fas fa-paper-plane" style="font-size: 24px; color: #ff6c37;"></i>
+                        <span>Postman Collection</span>
+                    </a>
+                    <a href="#" target="_blank" style="color: #fff; text-decoration: none; display: flex; align-items: center; gap: 10px; background: #262f45; padding: 12px 16px; border-radius: 8px;">
+                        <i class="fas fa-file-pdf" style="font-size: 24px; color: #ef4444;"></i> 
+                        <span>Báo cáo đồ án (PDF)</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="js/app.js"></script>
+</body>
+</html>
