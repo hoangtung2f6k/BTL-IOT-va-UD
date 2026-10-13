@@ -236,10 +236,20 @@ let togglePending = 0; // đang có lệnh chờ -> tạm dừng đồng bộ tr
 function paintDeviceIcon(switchEl, isOn) {
     const item = switchEl.closest('.device-item');
     if (!item) return;
+
     const icon = item.querySelector('.device-icon');
-    if (!icon) return;
-    icon.style.opacity = isOn ? '1' : '0.5';
-    icon.style.boxShadow = isOn ? '0 0 15px rgba(255,255,255,0.2)' : 'none';
+    if (icon) {
+        icon.style.opacity = isOn ? '1' : '0.5';
+        icon.style.boxShadow = isOn ? '0 0 15px rgba(255,255,255,0.2)' : 'none';
+    }
+
+    // Dòng chữ trạng thái dưới tên thiết bị: nhìn công tắc đôi khi khó đoán,
+    // nhất là lúc chụp ảnh màn hình đưa vào báo cáo.
+    const label = item.querySelector('.device-info p');
+    if (label) {
+        label.textContent = isOn ? 'Đang bật' : 'Đang tắt';
+        label.style.color = isOn ? '#10b981' : '#94a3b8';
+    }
 }
 
 // Chờ lâu hơn mốc timeout 5 giây của server một chút, để kết quả TIMEOUT
@@ -501,17 +511,28 @@ function changeSensorLimit() {
 
 async function loadSensorData() {
     try {
-        const time = readTimeFilter('sensor-f-time');
-        const query = buildQuery({
+        // Dropdown "Lọc theo" quyết định ô Value được hiểu là gì:
+        // chọn Thời gian -> Value là chuỗi ngày giờ; còn lại -> Value là số đo.
+        const field = val('sensor-f-field');
+        const valueBox = document.getElementById('sensor-f-value');
+        const params = {
             page: sensorPage,
             limit: sensorLimit,
-            sensorType: val('sensor-f-type'),
-            value: val('sensor-f-value'),
-            from: time.from,
-            to: time.to,
             sortBy: sensorSortBy,
             sortOrder: sensorSortOrder
-        });
+        };
+
+        if (field === 'time') {
+            const time = readTimeFilter('sensor-f-value');
+            params.from = time.from;
+            params.to = time.to;
+        } else {
+            valueBox.classList.remove('invalid'); // ô đang gõ số thì không bắt lỗi ngày
+            if (field) params.sensorType = field;
+            params.value = valueBox.value.trim();
+        }
+
+        const query = buildQuery(params);
 
         const res = await apiFetch(`/sensors?${query}`);
         const result = await res.json();
@@ -560,6 +581,20 @@ function sortSensorData(field) {
 function searchSensorData() {
     sensorPage = 1;
     loadSensorData();
+}
+
+// Xóa trắng mọi ô lọc rồi nạp lại bảng
+function clearFilters(ids) {
+    ids.forEach(id => {
+        const el = document.getElementById(id);
+        el.value = '';
+        el.classList.remove('invalid');
+    });
+}
+
+function resetSensorFilters() {
+    clearFilters(['sensor-f-field', 'sensor-f-value']);
+    searchSensorData();
 }
 
 // ============================================
@@ -649,13 +684,16 @@ async function loadActionData() {
             tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#94a3b8;">Không có dữ liệu</td></tr>';
         } else {
             tbody.innerHTML = result.data.map(row => {
-                // Cột "Time phản hồi": mốc mạch xác nhận. Lệnh còn chờ (PENDING)
-                // thì để gạch ngang. Độ trễ đưa vào tooltip, khỏi phải thêm cột.
-                let responded = '—';
+                // Người bấm lệnh. Lệnh cũ hoặc lệnh không gắn user_id thì để gạch ngang.
+                // Thời điểm mạch phản hồi và độ trễ không còn cột riêng nữa nên
+                // đưa vào tooltip của ô Time, bấm vào vẫn tra được khi cần.
+                const user = row.user_name || row.user_login || '—';
+
+                let timeTip = '';
                 if (row.responded_at) {
                     const diff = (new Date(row.responded_at) - new Date(row.created_at)) / 1000;
-                    const tip = diff >= 0 ? ` title="Phản hồi sau ${diff.toFixed(1)}s"` : '';
-                    responded = `<span${tip}>${formatTime(row.responded_at)}</span>`;
+                    timeTip = ` title="Mạch phản hồi lúc ${formatTime(row.responded_at)}` +
+                              (diff >= 0 ? ` (sau ${diff.toFixed(1)}s)` : '') + '"';
                 }
 
                 return `
@@ -664,8 +702,8 @@ async function loadActionData() {
                     <td>${DEVICE_LABELS[row.device_name] || row.device_name}</td>
                     <td><span class="${row.action === 'ON' ? 'badge-on' : 'badge-off'}">${row.action}</span></td>
                     <td>${renderStatusCell(row)}</td>
-                    <td>${formatTime(row.created_at)}</td>
-                    <td>${responded}</td>
+                    <td${timeTip}>${formatTime(row.created_at)}</td>
+                    <td>${user}</td>
                 </tr>`;
             }).join('');
         }
@@ -695,6 +733,11 @@ function sortActionData(field) {
 function searchActionData() {
     actionPage = 1;
     loadActionData();
+}
+
+function resetActionFilters() {
+    clearFilters(['action-f-device', 'action-f-action', 'action-f-status', 'action-f-time']);
+    searchActionData();
 }
 
 // ============================================

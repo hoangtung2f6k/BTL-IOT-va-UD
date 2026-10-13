@@ -92,8 +92,13 @@ input:disabled + .slider { opacity: 0.5; cursor: not-allowed; }
 .filter-field.grow { flex: 1; min-width: 180px; }
 .filter-field input, .filter-field select { width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: #fff; font-size: 13px; }
 .filter-field input:focus, .filter-field select:focus { outline: none; border-color: #f97316; }
-/* Ô Time gõ sai định dạng -> viền đỏ, giá trị đó không được gửi lên server */
+/* Ô gõ sai định dạng ngày -> viền đỏ, giá trị đó không được gửi lên server */
 .filter-field input.invalid { border-color: #f43f5e; background: rgba(244,63,94,0.08); }
+.btn-search, .btn-reset { height: 40px; padding: 0 22px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; }
+.btn-search { border: none; background: #f97316; color: #fff; }
+.btn-search:hover { background: #ea7108; }
+.btn-reset { border: 1px solid #334155; background: #262f45; color: #cbd5e1; }
+.btn-reset:hover { color: #fff; border-color: #f97316; }
 
 /* CHÂN BẢNG: số bản ghi - số dòng mỗi trang - phân trang */
 .table-footer { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; }
@@ -233,6 +238,7 @@ td { font-size: 14px; }
                             <div class="device-icon light-icon"><i class="fas fa-lightbulb"></i></div>
                             <div class="device-info">
                                 <h4>Đèn</h4>
+                                <p id="state-den" style="color:#10b981">Đang bật</p>
                             </div>
                             <div class="device-actions">
                                 <i class="fas fa-spinner fa-spin loading-icon" id="loading-den" style="display: none;"></i>
@@ -248,6 +254,7 @@ td { font-size: 14px; }
                             <div class="device-icon fan-icon"><i class="fas fa-fan"></i></div>
                             <div class="device-info">
                                 <h4>Quạt</h4>
+                                <p id="state-quat">Đang tắt</p>
                             </div>
                             <div class="device-actions">
                                 <i class="fas fa-spinner fa-spin loading-icon" id="loading-quat" style="display: none;"></i>
@@ -263,6 +270,7 @@ td { font-size: 14px; }
                             <div class="device-icon ac-icon"><i class="fas fa-snowflake"></i></div>
                             <div class="device-info">
                                 <h4>Điều hòa</h4>
+                                <p id="state-dieuhoa">Đang tắt</p>
                             </div>
                             <div class="device-actions">
                                 <i class="fas fa-spinner fa-spin loading-icon" id="loading-dieuhoa" style="display: none;"></i>
@@ -288,22 +296,21 @@ td { font-size: 14px; }
 
             <div class="filter-bar">
                 <div class="filter-field grow">
-                    <label for="sensor-f-type">Sensor Type</label>
-                    <select id="sensor-f-type">
-                        <option value="">All Sensors</option>
-                        <option value="temperature">Temperature — Nhiệt độ</option>
-                        <option value="humidity">Humidity — Độ ẩm</option>
-                        <option value="light">Light — Ánh sáng</option>
+                    <label for="sensor-f-field">Lọc theo</label>
+                    <select id="sensor-f-field">
+                        <option value="">Tất cả</option>
+                        <option value="temperature">Nhiệt độ</option>
+                        <option value="humidity">Độ ẩm</option>
+                        <option value="light">Ánh sáng</option>
+                        <option value="time">Thời gian</option>
                     </select>
                 </div>
                 <div class="filter-field grow">
                     <label for="sensor-f-value">Value</label>
                     <input type="text" id="sensor-f-value">
                 </div>
-                <div class="filter-field grow">
-                    <label for="sensor-f-time">Time</label>
-                    <input type="text" id="sensor-f-time">
-                </div>
+                <button class="btn-search">Search</button>
+                <button class="btn-reset">Reset</button>
             </div>
 
             <div class="table-container">
@@ -440,6 +447,8 @@ td { font-size: 14px; }
                     <label for="action-f-time">Time</label>
                     <input type="text" id="action-f-time">
                 </div>
+                <button class="btn-search">Search</button>
+                <button class="btn-reset">Reset</button>
             </div>
 
             <div class="table-container">
@@ -451,7 +460,7 @@ td { font-size: 14px; }
                             <th data-field="action">Action</th>
                             <th data-field="status">Status</th>
                             <th data-field="created_at">Time</th>
-                            <th>Time phản hồi</th>
+                            <th data-field="user_name">User</th>
                         </tr>
                     </thead>
                     <tbody id="action-tbody">
@@ -461,7 +470,7 @@ td { font-size: 14px; }
                     <td><span class="badge-off">OFF</span></td>
                     <td><span class="badge-status" style="background:rgba(245,158,11,0.1); color:#f59e0b;">TIMEOUT</span></td>
                     <td>13/10/2026 10:34:28</td>
-                    <td>—</td>
+                    <td>Nghiêm Xuân Hoàng Tùng</td>
                 </tr>
                 <tr>
                     <td class="cell-id">209</td>
@@ -469,7 +478,7 @@ td { font-size: 14px; }
                     <td><span class="badge-on">ON</span></td>
                     <td><span class="badge-loading"><i class="fas fa-spinner fa-spin"></i> loading</span></td>
                     <td>13/10/2026 10:34:09</td>
-                    <td>—</td>
+                    <td>Nghiêm Xuân Hoàng Tùng</td>
                 </tr>
                 <tr>
                     <td class="cell-id">208</td>
@@ -477,7 +486,7 @@ td { font-size: 14px; }
                     <td><span class="badge-off">OFF</span></td>
                     <td><span class="badge-status" style="background:rgba(244,63,94,0.1); color:#f43f5e;">FAILED</span></td>
                     <td>13/10/2026 10:33:48</td>
-                    <td>13/10/2026 10:33:53</td>
+                    <td>Nghiêm Xuân Hoàng Tùng</td>
                 </tr>
                 <tr>
                     <td class="cell-id">207</td>
@@ -485,7 +494,7 @@ td { font-size: 14px; }
                     <td><span class="badge-on">ON</span></td>
                     <td><span class="badge-on">ON</span></td>
                     <td>13/10/2026 10:29:09</td>
-                    <td>13/10/2026 10:29:10</td>
+                    <td>Nghiêm Xuân Hoàng Tùng</td>
                 </tr>
                 <tr>
                     <td class="cell-id">206</td>
@@ -493,7 +502,7 @@ td { font-size: 14px; }
                     <td><span class="badge-off">OFF</span></td>
                     <td><span class="badge-off">OFF</span></td>
                     <td>05/10/2026 14:53:59</td>
-                    <td>05/10/2026 14:54:00</td>
+                    <td>Nghiêm Xuân Hoàng Tùng</td>
                 </tr>
                 <tr>
                     <td class="cell-id">205</td>
@@ -501,7 +510,7 @@ td { font-size: 14px; }
                     <td><span class="badge-off">OFF</span></td>
                     <td><span class="badge-off">OFF</span></td>
                     <td>05/10/2026 14:53:58</td>
-                    <td>05/10/2026 14:53:59</td>
+                    <td>Nghiêm Xuân Hoàng Tùng</td>
                 </tr>
                 <tr>
                     <td class="cell-id">204</td>
@@ -509,7 +518,7 @@ td { font-size: 14px; }
                     <td><span class="badge-off">OFF</span></td>
                     <td><span class="badge-off">OFF</span></td>
                     <td>05/10/2026 14:53:57</td>
-                    <td>05/10/2026 14:53:58</td>
+                    <td>Nghiêm Xuân Hoàng Tùng</td>
                 </tr>
                 <tr>
                     <td class="cell-id">203</td>
@@ -517,7 +526,7 @@ td { font-size: 14px; }
                     <td><span class="badge-on">ON</span></td>
                     <td><span class="badge-on">ON</span></td>
                     <td>05/10/2026 14:53:56</td>
-                    <td>05/10/2026 14:53:56</td>
+                    <td>Nghiêm Xuân Hoàng Tùng</td>
                 </tr>
                 <tr>
                     <td class="cell-id">202</td>
@@ -525,7 +534,7 @@ td { font-size: 14px; }
                     <td><span class="badge-on">ON</span></td>
                     <td><span class="badge-on">ON</span></td>
                     <td>05/10/2026 14:53:54</td>
-                    <td>05/10/2026 14:53:54</td>
+                    <td>Nghiêm Xuân Hoàng Tùng</td>
                 </tr>
                 <tr>
                     <td class="cell-id">201</td>
@@ -533,7 +542,7 @@ td { font-size: 14px; }
                     <td><span class="badge-off">OFF</span></td>
                     <td><span class="badge-off">OFF</span></td>
                     <td>05/10/2026 14:53:53</td>
-                    <td>05/10/2026 14:53:54</td>
+                    <td>Nghiêm Xuân Hoàng Tùng</td>
                 </tr>
                     </tbody>
                 </table>

@@ -103,6 +103,7 @@
                             <div class="device-icon light-icon"><i class="fas fa-lightbulb"></i></div>
                             <div class="device-info">
                                 <h4>Đèn</h4>
+                                <p id="state-den">Đang tắt</p>
                             </div>
                             <div class="device-actions">
                                 <i class="fas fa-spinner fa-spin loading-icon" id="loading-den" style="display: none;"></i>
@@ -118,6 +119,7 @@
                             <div class="device-icon fan-icon"><i class="fas fa-fan"></i></div>
                             <div class="device-info">
                                 <h4>Quạt</h4>
+                                <p id="state-quat">Đang tắt</p>
                             </div>
                             <div class="device-actions">
                                 <i class="fas fa-spinner fa-spin loading-icon" id="loading-quat" style="display: none;"></i>
@@ -133,6 +135,7 @@
                             <div class="device-icon ac-icon"><i class="fas fa-snowflake"></i></div>
                             <div class="device-info">
                                 <h4>Điều hòa</h4>
+                                <p id="state-dieuhoa">Đang tắt</p>
                             </div>
                             <div class="device-actions">
                                 <i class="fas fa-spinner fa-spin loading-icon" id="loading-dieuhoa" style="display: none;"></i>
@@ -158,22 +161,21 @@
 
             <div class="filter-bar">
                 <div class="filter-field grow">
-                    <label for="sensor-f-type">Sensor Type</label>
-                    <select id="sensor-f-type" onchange="searchSensorData()">
-                        <option value="">All Sensors</option>
-                        <option value="temperature">Temperature — Nhiệt độ</option>
-                        <option value="humidity">Humidity — Độ ẩm</option>
-                        <option value="light">Light — Ánh sáng</option>
+                    <label for="sensor-f-field">Lọc theo</label>
+                    <select id="sensor-f-field" onchange="searchSensorData()">
+                        <option value="">Tất cả</option>
+                        <option value="temperature">Nhiệt độ</option>
+                        <option value="humidity">Độ ẩm</option>
+                        <option value="light">Ánh sáng</option>
+                        <option value="time">Thời gian</option>
                     </select>
                 </div>
                 <div class="filter-field grow">
                     <label for="sensor-f-value">Value</label>
                     <input type="text" id="sensor-f-value" oninput="debouncedSensorSearch()">
                 </div>
-                <div class="filter-field grow">
-                    <label for="sensor-f-time">Time</label>
-                    <input type="text" id="sensor-f-time" oninput="debouncedSensorSearch()">
-                </div>
+                <button class="btn-search" onclick="searchSensorData()">Search</button>
+                <button class="btn-reset" onclick="resetSensorFilters()">Reset</button>
             </div>
 
             <div class="table-container">
@@ -243,6 +245,8 @@
                     <label for="action-f-time">Time</label>
                     <input type="text" id="action-f-time" oninput="debouncedActionSearch()">
                 </div>
+                <button class="btn-search" onclick="searchActionData()">Search</button>
+                <button class="btn-reset" onclick="resetActionFilters()">Reset</button>
             </div>
 
             <div class="table-container">
@@ -254,7 +258,7 @@
                             <th data-field="action" onclick="sortActionData('action')">Action</th>
                             <th data-field="status" onclick="sortActionData('status')">Status</th>
                             <th data-field="created_at" onclick="sortActionData('created_at')">Time</th>
-                            <th>Time phản hồi</th>
+                            <th data-field="user_name" onclick="sortActionData('user_name')">User</th>
                         </tr>
                     </thead>
                     <tbody id="action-tbody"></tbody>

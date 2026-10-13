@@ -84,8 +84,13 @@ input:disabled + .slider { opacity: 0.5; cursor: not-allowed; }
 .filter-field.grow { flex: 1; min-width: 180px; }
 .filter-field input, .filter-field select { width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: #fff; font-size: 13px; }
 .filter-field input:focus, .filter-field select:focus { outline: none; border-color: #f97316; }
-/* Ô Time gõ sai định dạng -> viền đỏ, giá trị đó không được gửi lên server */
+/* Ô gõ sai định dạng ngày -> viền đỏ, giá trị đó không được gửi lên server */
 .filter-field input.invalid { border-color: #f43f5e; background: rgba(244,63,94,0.08); }
+.btn-search, .btn-reset { height: 40px; padding: 0 22px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; }
+.btn-search { border: none; background: #f97316; color: #fff; }
+.btn-search:hover { background: #ea7108; }
+.btn-reset { border: 1px solid #334155; background: #262f45; color: #cbd5e1; }
+.btn-reset:hover { color: #fff; border-color: #f97316; }
 
 /* CHÂN BẢNG: số bản ghi - số dòng mỗi trang - phân trang */
 .table-footer { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; }
