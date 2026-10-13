@@ -383,7 +383,30 @@ async function loadDeviceStatus() {
 // BỘ LỌC DÙNG CHUNG CHO HAI BẢNG
 // ============================================
 // Ô thời gian nhập tay dạng chuỗi "1/1/2025", có thể kèm giờ "1/1/2025 14:30".
-const DATE_FILTER_RE = /^\d{1,2}\/\d{1,2}\/\d{4}(\s+\d{1,2}:\d{1,2}(:\d{1,2})?)?$/;
+// Gõ tới đâu lọc tới đó: giờ, phút, giây đều không bắt buộc.
+// Hợp lệ: 1/1/2025 · 1/1/2025 15 · 1/1/2025 15:30 · 1/1/2025 15:30:45
+const DATE_FILTER_RE = /^(\d{1,2})\/(\d{1,2})\/(\d{4})(?:\s+(\d{1,2})(?::(\d{1,2})(?::(\d{1,2}))?)?)?$/;
+
+// Kiểm tra y hệt backend/utils/dateFilter.js: đúng hình dạng, các số trong
+// phạm vi, và ngày phải có thật. Nếu chỉ khớp hình dạng thì "1/1/2025 25" hay
+// "31/2/2025" sẽ lọt qua rồi bị server bỏ qua lặng lẽ — người dùng tưởng
+// bộ lọc hỏng mà không biết mình gõ sai.
+function isValidTimeInput(text) {
+    const m = text.match(DATE_FILTER_RE);
+    if (!m) return false;
+
+    const [, d, mo, y, h, mi, s] = m;
+    const day = Number(d), month = Number(mo), year = Number(y);
+
+    if (month < 1 || month > 12 || day < 1) return false;
+    if (h !== undefined && Number(h) > 23) return false;
+    if (mi !== undefined && Number(mi) > 59) return false;
+    if (s !== undefined && Number(s) > 59) return false;
+
+    // Date tự "tràn" 31/02 thành 03/03 nên phải so lại sau khi dựng
+    const probe = new Date(year, month - 1, day);
+    return probe.getMonth() === month - 1 && probe.getDate() === day;
+}
 
 // Một ô "Time" duy nhất theo bản thiết kế đã duyệt, nhưng vẫn lọc được cả khoảng:
 //   "1/1/2025"                -> trọn ngày 1/1/2025
@@ -400,7 +423,7 @@ function readTimeFilter(inputId) {
     }
 
     const parts = text.split('-').map(p => p.trim()).filter(Boolean);
-    const valid = parts.length >= 1 && parts.length <= 2 && parts.every(p => DATE_FILTER_RE.test(p));
+    const valid = parts.length >= 1 && parts.length <= 2 && parts.every(isValidTimeInput);
     el.classList.toggle('invalid', !valid);
     if (!valid) return { from: '', to: '' };
 

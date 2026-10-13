@@ -74,8 +74,8 @@
           { "name": "deviceId", "in": "query", "description": "Lọc theo ID cảm biến", "schema": { "type": "integer" } },
           { "name": "sensorType", "in": "query", "description": "temperature | humidity | light", "schema": { "type": "string" } },
           { "name": "value", "in": "query", "description": "Khớp chứa, ví dụ 28 ra 28.7", "schema": { "type": "string" } },
-          { "name": "from", "in": "query", "description": "Từ ngày, dạng chuỗi d/m/yyyy (VD 1/1/2025)", "schema": { "type": "string" } },
-          { "name": "to", "in": "query", "description": "Đến ngày, dạng chuỗi d/m/yyyy (VD 31/12/2025)", "schema": { "type": "string" } },
+          { "name": "from", "in": "query", "description": "Mốc đầu. Gõ tới đâu lọc tới đó: 1/1/2025 | 1/1/2025 15 | 1/1/2025 15:30 | 1/1/2025 15:30:45", "schema": { "type": "string" } },
+          { "name": "to", "in": "query", "description": "Mốc cuối, cùng cách viết như from. Phần bỏ trống được hiểu là trọn khoảng (1/1/2025 15 = tới 15:59:59)", "schema": { "type": "string" } },
           { "name": "sortBy", "in": "query", "description": "id | device_id | sensor_type | value | created_at", "schema": { "type": "string", "default": "created_at" } },
           { "name": "sortOrder", "in": "query", "schema": { "type": "string", "default": "DESC" } }
         ],
@@ -145,8 +145,8 @@
           { "name": "device", "in": "query", "description": "den | quat | dieuhoa", "schema": { "type": "string" } },
           { "name": "action", "in": "query", "description": "ON | OFF", "schema": { "type": "string" } },
           { "name": "status", "in": "query", "description": "PENDING | SUCCESS | FAILED | TIMEOUT", "schema": { "type": "string" } },
-          { "name": "from", "in": "query", "description": "Từ ngày, dạng chuỗi d/m/yyyy (VD 1/1/2025)", "schema": { "type": "string" } },
-          { "name": "to", "in": "query", "description": "Đến ngày, dạng chuỗi d/m/yyyy (VD 31/12/2025)", "schema": { "type": "string" } },
+          { "name": "from", "in": "query", "description": "Mốc đầu. Gõ tới đâu lọc tới đó: 1/1/2025 | 1/1/2025 15 | 1/1/2025 15:30 | 1/1/2025 15:30:45", "schema": { "type": "string" } },
+          { "name": "to", "in": "query", "description": "Mốc cuối, cùng cách viết như from. Phần bỏ trống được hiểu là trọn khoảng (1/1/2025 15 = tới 15:59:59)", "schema": { "type": "string" } },
           { "name": "sortBy", "in": "query", "description": "id | device_name | action | status | created_at", "schema": { "type": "string", "default": "created_at" } },
           { "name": "sortOrder", "in": "query", "schema": { "type": "string", "default": "DESC" } }
         ],
