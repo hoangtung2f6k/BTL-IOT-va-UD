@@ -76,20 +76,10 @@ router.post('/control', verifyToken, async (req, res) => {
 
         const deviceInfo = deviceRows[0];
 
-        // Theo SRS: Kiểm tra is_online trước
-        if (!deviceInfo.is_online) {
-            // Thiết bị offline → không gửi MQTT, tạo actions FAILED
-            await db.query(
-                `INSERT INTO actions (user_id, device_id, request_id, action, status, error_message, sent_at) 
-                 VALUES (?, ?, ?, ?, 'FAILED', 'Device is offline', NOW())`,
-                [req.user.id, deviceInfo.id, uuidv4().substring(0, 8), action]
-            );
-            return res.status(503).json({
-                success: false,
-                message: `${device} is offline`,
-                currentState: deviceInfo.current_state
-            });
-        }
+        // Chưa cắm mạch thì KHÔNG chặn lệnh nữa. Lệnh vẫn được publish bình thường,
+        // chỉ khác là bên dưới server sẽ tự đóng vai mạch trả lời (chế độ mô phỏng),
+        // để demo giao diện không bị kẹt chờ rồi công tắc quay về trạng thái cũ.
+        const simulated = !deviceInfo.is_online;
 
         // Theo SRS: Kiểm tra trùng trạng thái → không gửi lệnh mới, không tạo bản ghi
         if (deviceInfo.current_state === action) {
@@ -137,7 +127,24 @@ router.post('/control', verifyToken, async (req, res) => {
             }
         }, 5000);
 
-        // KHÔNG cập nhật devices.current_state ở đây.
+        // ===== Chế độ mô phỏng: chưa cắm mạch =====
+        // Không có mạch nào trả lời thì lệnh sẽ nằm chờ rồi thành TIMEOUT, công tắc
+        // trên web tự quay về chỗ cũ — không demo giao diện được. Nên khi thiết bị
+        // đang offline, server tự đóng vai mạch xác nhận ngay. Lúc cắm mạch thật
+        // (is_online = TRUE) nhánh này không chạy, phản hồi thật của mạch mới tính.
+        if (simulated) {
+            await db.query(
+                `UPDATE actions SET status = 'SUCCESS', responded_at = NOW() WHERE request_id = ?`,
+                [requestId]
+            );
+            await db.query(
+                'UPDATE devices SET current_state = ? WHERE id = ?',
+                [action, deviceInfo.id]
+            );
+            console.log(`🧪 Mô phỏng (chưa cắm mạch): ${device} → ${action}`);
+        }
+
+        // KHÔNG cập nhật devices.current_state ở đây khi có mạch thật.
         // Trước đây có một "optimistic update" ghi current_state ngay khi vừa
         // publish lệnh, nên dù mạch không hề phản hồi (TIMEOUT) thì CSDL vẫn ghi
         // là đã bật, và công tắc ngoài Dashboard cứ sáng như thật.
