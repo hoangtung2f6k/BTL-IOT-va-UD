@@ -643,24 +643,20 @@ function escapeAttr(text) {
         .replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
-// Cột Status theo bản vẽ tay: lệnh xong thì hiện TRẠNG THÁI THIẾT BỊ sau lệnh
-// (ON/OFF), đang chờ mạch trả lời thì hiện "loading", hỏng thì hiện lý do.
-// Khác với cột Action ở chỗ: Action là lệnh đã gửi, Status là kết quả thật sự.
-function renderStatusCell(row) {
-    if (row.status === 'SUCCESS') {
-        // Mạch xác nhận xong -> trạng thái mới chính là hành động vừa gửi
-        const cls = row.action === 'ON' ? 'badge-on' : 'badge-off';
-        return `<span class="${cls}" title="Thành công">${row.action}</span>`;
-    }
-    if (row.status === 'PENDING') {
-        return '<span class="badge-loading" title="Đang chờ mạch phản hồi"><i class="fas fa-spinner fa-spin"></i> loading</span>';
-    }
+// Cột Status hiện đúng giá trị lưu trong CSDL: SUCCESS / PENDING / FAILED /
+// TIMEOUT — khớp với ENUM của bảng actions và với ô lọc Status.
+// Lý do cụ thể (mạch báo lỗi gì, không phản hồi) để trong tooltip.
+const STATUS_STYLES = {
+    SUCCESS: { color: '#10b981', bg: 'rgba(16,185,129,0.1)', note: 'Mạch đã xác nhận' },
+    PENDING: { color: '#f59e0b', bg: 'rgba(245,158,11,0.1)', note: 'Đang chờ mạch phản hồi' },
+    TIMEOUT: { color: '#f59e0b', bg: 'rgba(245,158,11,0.1)', note: 'Hết giờ chờ, mạch không phản hồi' },
+    FAILED:  { color: '#f43f5e', bg: 'rgba(244,63,94,0.1)',  note: 'Thất bại' }
+};
 
-    const timeout = row.status === 'TIMEOUT';
-    const note = timeout ? 'Mạch không phản hồi' : (row.error_message || 'Thất bại');
-    const color = timeout ? '#f59e0b' : '#f43f5e';
-    const bg = timeout ? 'rgba(245,158,11,0.1)' : 'rgba(244,63,94,0.1)';
-    return `<span class="badge-status" title="${escapeAttr(note)}" style="background:${bg}; color:${color};">${row.status}</span>`;
+function renderStatusCell(row) {
+    const st = STATUS_STYLES[row.status] || STATUS_STYLES.FAILED;
+    const note = row.status === 'FAILED' ? (row.error_message || st.note) : st.note;
+    return `<span class="badge-status" title="${escapeAttr(note)}" style="background:${st.bg}; color:${st.color};">${row.status}</span>`;
 }
 
 async function loadActionData() {
@@ -783,7 +779,7 @@ function renderPagination(containerId, pagination, onClick) {
     loadDeviceStatus();
 
     // Nạp sẵn danh sách thiết bị cho ô lọc Device, để khi bấm sang
-    // Device History là danh sách đã có, không bị trống một nhịp.
+    // Action History là danh sách đã có, không bị trống một nhịp.
     loadActionFilterOptions();
 
     setInterval(fetchLatestSensor, 5000);

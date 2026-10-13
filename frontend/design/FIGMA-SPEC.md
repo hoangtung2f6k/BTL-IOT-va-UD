@@ -8,7 +8,7 @@ Bốn file `.html` cạnh file này là bản xuất tĩnh của đúng 4 màn h
 |---|---|
 | `dashboard.html` | Tổng quan |
 | `sensor-data.html` | Sensor Data |
-| `device-history.html` | Device History |
+| `action-history.html` | Action History |
 | `profile.html` | Profile |
 
 ---
@@ -69,34 +69,32 @@ Font **Inter** (400 / 500 / 600 / 700).
 ## 4. Sidebar (giống nhau ở cả 4 frame)
 
 Logo vuông 32 bo 8 nền `#f97316` + chữ **AURA HOME**.
-Menu: **Dashboard · Sensor Data · Device History · Profile · Đăng xuất** (mục Đăng xuất màu `#f43f5e`).
+Menu: **Dashboard · Sensor Data · Action History · Profile · Đăng xuất** (mục Đăng xuất màu `#f43f5e`).
 Chân sidebar: ảnh đại diện tròn 40 + tên **Nghiêm Xuân Hoàng Tùng** (13/600) + **Quản trị viên** (11, `#94a3b8`).
 
 ## 5. Từng màn hình
 
 ### Dashboard — tiêu đề "Tổng quan"
-- Banner đỏ (chỉ hiện khi mất kết nối): nền `rgba(244,63,94,.12)`, viền `#f43f5e`, bo 10, nội dung
-  *"Mất kết nối ESP8266 — không nhận được dữ liệu cảm biến."*
 - Lưới 2 cột tỉ lệ **2fr / 1fr**, cách nhau 24.
 - Cột trái: 3 thẻ **NHIỆT ĐỘ** (°C) · **ĐỘ ẨM** (%) · **ÁNH SÁNG** (lux); dưới là khung
   **Biểu đồ cảm biến** với 3 chú thích bấm được (Nhiệt độ / Độ ẩm / Ánh sáng).
-- Cột phải: panel **Điều khiển thiết bị**, 3 dòng **Đèn · Quạt · Điều hòa**, mỗi dòng một công tắc.
+- Cột phải: panel **Điều khiển thiết bị**, 3 dòng **Đèn · Quạt · Điều hòa**. Mỗi dòng gồm
+  icon, tên, dòng chữ trạng thái **Đang bật** (`#10b981`) / **Đang tắt** (`#94a3b8`), và công tắc.
 
 ### Sensor Data — phụ đề "Tra cứu và xem lại các giá trị cảm biến đã ghi"
-- Thanh lọc **3 ô**, không có nút bấm (lọc chạy ngay khi chọn/gõ):
-  **Sensor Type** (All Sensors / Temperature / Humidity / Light) · **Value** · **Time**.
-- Dòng gợi ý định dạng ngày ngay dưới thanh lọc.
+- Thanh lọc: **Lọc theo** (Tất cả / Nhiệt độ / Độ ẩm / Ánh sáng / Thời gian) · **Value**
+  · nút **Search** (cam) · nút **Reset** (viền xám). Bộ lọc chỉ chạy khi bấm nút.
+- Ô Value đổi nghĩa theo dropdown: chọn loại cảm biến thì gõ số đo, chọn Thời gian thì gõ
+  ngày (`13/10/2026`) hoặc chỉ giờ (`15`, `15:30` — lọc khung giờ đó của mọi ngày).
 - Bảng **4 cột**: `ID` · `Sensor Type` · `Value` · `Time`.
 - Chân bảng 1 hàng: `Showing 1 to 10 of N records` — `Number of lines [10]` — nút phân trang.
 
-### Device History — phụ đề "Tra cứu lịch sử bật/tắt thiết bị"
-- Thanh lọc **4 ô**, không có nút: **Device** · **Action** · **Status** · **Time**.
-- Bảng **6 cột**: `ID` · `Device` · `Action` · `Status` · `Time` · `Time phản hồi`.
-- Cột Status có 3 dạng:
-  - thành công → badge `ON` (xanh) hoặc `OFF` (đỏ);
-  - đang chờ → `loading` kèm icon xoay, màu `#f59e0b`;
-  - hỏng → badge `TIMEOUT` (cam) hoặc `FAILED` (đỏ).
-- Lệnh chưa phản hồi thì cột cuối là dấu `—`.
+### Action History — phụ đề "Tra cứu lịch sử bật/tắt thiết bị"
+- Thanh lọc: **Device** · **Action** · **Status** · **Time** · nút **Search** · nút **Reset**.
+- Bảng **6 cột**: `ID` · `Device` · `Action` · `Status` · `Time` · `User`.
+- Cột Action: badge `ON` (xanh `#10b981`) hoặc `OFF` (đỏ `#f43f5e`), bo 20.
+- Cột Status: badge bo 6 hiện đúng tên trạng thái —
+  `SUCCESS` (xanh) · `PENDING` (cam `#f59e0b`) · `TIMEOUT` (cam) · `FAILED` (đỏ).
 
 ### Profile
 - Ảnh đại diện 128 + tên, kèm các dòng: **Mã SV · Lớp · Email · Vai trò · Môn**.

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AURA HOME — Device History</title>
+    <title>AURA HOME — Action History</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
@@ -120,7 +120,6 @@ td { font-size: 14px; }
 .badge-on { background: rgba(16, 185, 129, 0.1); color: #10b981; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
 .badge-off { background: rgba(244, 63, 94, 0.1); color: #f43f5e; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
 .badge-status { padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; letter-spacing: 0.4px; cursor: help; }
-.badge-loading { display: inline-flex; align-items: center; gap: 6px; background: rgba(245,158,11,0.1); color: #f59e0b; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
 .cell-id { font-weight: 700; }
 .cell-value { font-weight: 600; }
 .cell-unit { color: #94a3b8; font-weight: 400; font-size: 12px; }
@@ -152,7 +151,7 @@ td { font-size: 14px; }
         <ul class="nav-links">
             <li><i class="fas fa-border-all"></i> Dashboard</li>
             <li><i class="fas fa-microchip"></i> Sensor Data</li>
-            <li class="active"><i class="fas fa-clock"></i> Device History</li>
+            <li class="active"><i class="fas fa-clock"></i> Action History</li>
             <li><i class="fas fa-user-circle"></i> Profile</li>
             <li style="color: #f43f5e; margin-top: auto;"><i class="fas fa-sign-out-alt"></i> Đăng xuất</li>
         </ul>
@@ -406,7 +405,7 @@ td { font-size: 14px; }
         <div id="action-history" class="page" style="display:block;">
             <div class="page-header">
                 <div>
-                    <h1>Device History</h1>
+                    <h1>Action History</h1>
                     <p>Tra cứu lịch sử bật/tắt thiết bị</p>
                 </div>
             </div>
@@ -430,8 +429,8 @@ td { font-size: 14px; }
                     <label for="action-f-status">Status</label>
                     <select id="action-f-status">
                         <option value="">All Status</option>
-                        <option value="SUCCESS">Thành công (ON/OFF)</option>
-                        <option value="PENDING">Đang chờ (loading)</option>
+                        <option value="SUCCESS">SUCCESS</option>
+                        <option value="PENDING">PENDING</option>
                         <option value="FAILED">FAILED</option>
                         <option value="TIMEOUT">TIMEOUT</option>
                     </select>
@@ -469,7 +468,7 @@ td { font-size: 14px; }
                     <td class="cell-id">209</td>
                     <td>Đèn</td>
                     <td><span class="badge-on">ON</span></td>
-                    <td><span class="badge-loading"><i class="fas fa-spinner fa-spin"></i> loading</span></td>
+                    <td><span class="badge-status" style="background:rgba(245,158,11,0.1); color:#f59e0b;">PENDING</span></td>
                     <td>13/10/2026 10:34:09</td>
                     <td>Nghiêm Xuân Hoàng Tùng</td>
                 </tr>
@@ -485,7 +484,7 @@ td { font-size: 14px; }
                     <td class="cell-id">207</td>
                     <td>Quạt</td>
                     <td><span class="badge-on">ON</span></td>
-                    <td><span class="badge-on">ON</span></td>
+                    <td><span class="badge-status" style="background:rgba(16,185,129,0.1); color:#10b981;">SUCCESS</span></td>
                     <td>13/10/2026 10:29:09</td>
                     <td>Nghiêm Xuân Hoàng Tùng</td>
                 </tr>
@@ -493,7 +492,7 @@ td { font-size: 14px; }
                     <td class="cell-id">206</td>
                     <td>Quạt</td>
                     <td><span class="badge-off">OFF</span></td>
-                    <td><span class="badge-off">OFF</span></td>
+                    <td><span class="badge-status" style="background:rgba(16,185,129,0.1); color:#10b981;">SUCCESS</span></td>
                     <td>05/10/2026 14:53:59</td>
                     <td>Nghiêm Xuân Hoàng Tùng</td>
                 </tr>
@@ -501,7 +500,7 @@ td { font-size: 14px; }
                     <td class="cell-id">205</td>
                     <td>Đèn</td>
                     <td><span class="badge-off">OFF</span></td>
-                    <td><span class="badge-off">OFF</span></td>
+                    <td><span class="badge-status" style="background:rgba(16,185,129,0.1); color:#10b981;">SUCCESS</span></td>
                     <td>05/10/2026 14:53:58</td>
                     <td>Nghiêm Xuân Hoàng Tùng</td>
                 </tr>
@@ -509,7 +508,7 @@ td { font-size: 14px; }
                     <td class="cell-id">204</td>
                     <td>Điều hòa</td>
                     <td><span class="badge-off">OFF</span></td>
-                    <td><span class="badge-off">OFF</span></td>
+                    <td><span class="badge-status" style="background:rgba(16,185,129,0.1); color:#10b981;">SUCCESS</span></td>
                     <td>05/10/2026 14:53:57</td>
                     <td>Nghiêm Xuân Hoàng Tùng</td>
                 </tr>
@@ -517,7 +516,7 @@ td { font-size: 14px; }
                     <td class="cell-id">203</td>
                     <td>Điều hòa</td>
                     <td><span class="badge-on">ON</span></td>
-                    <td><span class="badge-on">ON</span></td>
+                    <td><span class="badge-status" style="background:rgba(16,185,129,0.1); color:#10b981;">SUCCESS</span></td>
                     <td>05/10/2026 14:53:56</td>
                     <td>Nghiêm Xuân Hoàng Tùng</td>
                 </tr>
@@ -525,7 +524,7 @@ td { font-size: 14px; }
                     <td class="cell-id">202</td>
                     <td>Quạt</td>
                     <td><span class="badge-on">ON</span></td>
-                    <td><span class="badge-on">ON</span></td>
+                    <td><span class="badge-status" style="background:rgba(16,185,129,0.1); color:#10b981;">SUCCESS</span></td>
                     <td>05/10/2026 14:53:54</td>
                     <td>Nghiêm Xuân Hoàng Tùng</td>
                 </tr>
@@ -533,7 +532,7 @@ td { font-size: 14px; }
                     <td class="cell-id">201</td>
                     <td>Quạt</td>
                     <td><span class="badge-off">OFF</span></td>
-                    <td><span class="badge-off">OFF</span></td>
+                    <td><span class="badge-status" style="background:rgba(16,185,129,0.1); color:#10b981;">SUCCESS</span></td>
                     <td>05/10/2026 14:53:53</td>
                     <td>Nghiêm Xuân Hoàng Tùng</td>
                 </tr>
