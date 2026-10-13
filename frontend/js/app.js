@@ -403,30 +403,64 @@ function isValidTimeInput(text) {
     return probe.getMonth() === month - 1 && probe.getDate() === day;
 }
 
-// Một ô "Time" duy nhất theo bản thiết kế đã duyệt, nhưng vẫn lọc được cả khoảng:
-//   "1/1/2025"                -> trọn ngày 1/1/2025
-//   "1/1/2025 14:30"          -> đúng mốc đó
-//   "1/1/2025 - 31/12/2025"   -> khoảng giữa hai mốc
-// Tách bằng dấu "-" không sợ nhầm vì ngày ở đây luôn dùng dấu "/".
-// Gõ sai định dạng thì tô viền đỏ và bỏ qua, không gửi lên server.
+// Chuỗi chỉ có giờ, không kèm ngày: "15", "15:30", "15:30:45"
+const TIME_OF_DAY_RE = /^(\d{1,2})(?::(\d{1,2})(?::(\d{1,2}))?)?$/;
+
+function isValidTimeOfDay(text) {
+    const m = text.match(TIME_OF_DAY_RE);
+    if (!m) return false;
+    if (Number(m[1]) > 23) return false;
+    if (m[2] !== undefined && Number(m[2]) > 59) return false;
+    if (m[3] !== undefined && Number(m[3]) > 59) return false;
+    return true;
+}
+
+// Một ô nhập duy nhất, phục vụ hai kiểu lọc khác hẳn nhau:
+//
+//   CÓ NGÀY -> khoảng thời gian tuyệt đối (from/to)
+//     "1/1/2025"              trọn ngày đó
+//     "1/1/2025 15"           trọn giờ 15h hôm đó
+//     "1/1/2025 - 31/12/2025" khoảng giữa hai mốc
+//
+//   CHỈ GIỜ -> khung giờ lặp lại mọi ngày (timeFrom/timeTo)
+//     "15"       15:00:00..15:59:59 của MỌI ngày
+//     "15:30"    đúng phút 15:30 của mọi ngày
+//     "8 - 11"   khung 8h tới 11h59 của mọi ngày
+//
+// Tách khoảng bằng dấu "-" không sợ nhầm vì ngày luôn dùng dấu "/".
+// Hai vế phải cùng kiểu; gõ sai thì tô viền đỏ và không gửi gì lên server.
 function readTimeFilter(inputId) {
     const el = document.getElementById(inputId);
     const text = el.value.trim();
+    const rong = { from: '', to: '', timeFrom: '', timeTo: '' };
+
     if (!text) {
         el.classList.remove('invalid');
-        return { from: '', to: '' };
+        return rong;
     }
 
     const parts = text.split('-').map(p => p.trim()).filter(Boolean);
-    const valid = parts.length >= 1 && parts.length <= 2 && parts.every(isValidTimeInput);
-    el.classList.toggle('invalid', !valid);
-    if (!valid) return { from: '', to: '' };
+    if (parts.length < 1 || parts.length > 2) {
+        el.classList.add('invalid');
+        return rong;
+    }
 
-    // Một mốc duy nhất -> dùng làm cả from lẫn to; phía server tự nới "to"
-    // tới 23:59:59 khi chuỗi không kèm giờ, nên lọc trọn ngày.
-    return parts.length === 2
-        ? { from: parts[0], to: parts[1] }
-        : { from: parts[0], to: parts[0] };
+    // Một mốc duy nhất -> dùng làm cả cận dưới lẫn cận trên; phía server tự nới
+    // cận trên tới cuối khoảng (23:59:59 cho ngày, 15:59:59 cho giờ).
+    const dau = parts[0];
+    const cuoi = parts[1] || parts[0];
+
+    if (parts.every(isValidTimeInput)) {
+        el.classList.remove('invalid');
+        return { ...rong, from: dau, to: cuoi };
+    }
+    if (parts.every(isValidTimeOfDay)) {
+        el.classList.remove('invalid');
+        return { ...rong, timeFrom: dau, timeTo: cuoi };
+    }
+
+    el.classList.add('invalid');
+    return rong;
 }
 
 function val(id) {
@@ -499,9 +533,8 @@ async function loadSensorData() {
         };
 
         if (field === 'time') {
-            const time = readTimeFilter('sensor-f-value');
-            params.from = time.from;
-            params.to = time.to;
+            // Gộp cả from/to lẫn timeFrom/timeTo; buildQuery tự bỏ cái nào rỗng
+            Object.assign(params, readTimeFilter('sensor-f-value'));
         } else {
             valueBox.classList.remove('invalid'); // ô đang gõ số thì không bắt lỗi ngày
             if (field) params.sensorType = field;
@@ -632,17 +665,16 @@ function renderStatusCell(row) {
 
 async function loadActionData() {
     try {
-        const time = readTimeFilter('action-f-time');
         const query = buildQuery({
             page: actionPage,
             limit: actionLimit,
             device: val('action-f-device'),
             action: val('action-f-action'),
             status: val('action-f-status'),
-            from: time.from,
-            to: time.to,
             sortBy: actionSortBy,
-            sortOrder: actionSortOrder
+            sortOrder: actionSortOrder,
+            // Gộp cả from/to lẫn timeFrom/timeTo; buildQuery tự bỏ cái nào rỗng
+            ...readTimeFilter('action-f-time')
         });
 
         const res = await apiFetch(`/devices?${query}`);

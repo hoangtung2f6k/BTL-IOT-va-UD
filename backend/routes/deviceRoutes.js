@@ -4,7 +4,7 @@ const db = require('../config/db');
 const mqttClient = require('../config/mqtt');
 const { v4: uuidv4 } = require('uuid');
 const { verifyToken } = require('../middleware/authMiddleware');
-const { parseDateInput } = require('../utils/dateFilter');
+const { parseDateInput, parseTimeOfDay } = require('../utils/dateFilter');
 require('dotenv').config();
 
 // ============================================
@@ -176,6 +176,8 @@ router.get('/', async (req, res) => {
             status = '',
             from = '',
             to = '',
+            timeFrom = '',
+            timeTo = '',
             sortBy = 'created_at',
             sortOrder = 'DESC'
         } = req.query;
@@ -242,6 +244,19 @@ router.get('/', async (req, res) => {
         if (toAt) {
             where.push('a.sent_at <= ?');
             queryParams.push(toAt);
+        }
+
+        // --- Lọc theo khung giờ trong ngày, bỏ qua ngày ---
+        // "15" -> mọi ngày, các lệnh gửi từ 15:00:00 đến 15:59:59.
+        const todFrom = parseTimeOfDay(timeFrom);
+        const todTo = parseTimeOfDay(timeTo, true);
+        if (todFrom) {
+            where.push('TIME(a.sent_at) >= ?');
+            queryParams.push(todFrom);
+        }
+        if (todTo) {
+            where.push('TIME(a.sent_at) <= ?');
+            queryParams.push(todTo);
         }
 
         // LEFT JOIN (không phải JOIN) cho bảng users: lệnh do mạch tự sinh hoặc

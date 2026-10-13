@@ -64,4 +64,30 @@ function parseDateInput(raw, endOfRange = false) {
     return `${year}-${pad(month)}-${pad(day)} ${pad(hour)}:${pad(minute)}:${pad(second)}`;
 }
 
-module.exports = { parseDateInput };
+// ============================================
+// Phân tích chuỗi chỉ có GIỜ, không kèm ngày: "15", "15:30", "15:30:45".
+//
+// Khác hẳn parseDateInput ở chỗ nó không trỏ tới một thời điểm cụ thể mà mô tả
+// một khung giờ lặp lại hằng ngày — dùng để lọc "mọi ngày, trong khoảng giờ đó".
+// Phút và giây bỏ trống thì điền 0 (mốc đầu) hoặc 59 (mốc cuối), nên "15" tự
+// thành 15:00:00..15:59:59.
+//
+// Trả về 'HH:MM:SS' để so với TIME(cột) trong MySQL, hoặc null khi không hợp lệ.
+// ============================================
+function parseTimeOfDay(raw, endOfRange = false) {
+    const text = String(raw || '').trim();
+    if (!text) return null;
+
+    const m = text.match(/^(\d{1,2})(?::(\d{1,2})(?::(\d{1,2}))?)?$/);
+    if (!m) return null;
+
+    const hour = Number(m[1]);
+    const minute = m[2] !== undefined ? Number(m[2]) : (endOfRange ? 59 : 0);
+    const second = m[3] !== undefined ? Number(m[3]) : (endOfRange ? 59 : 0);
+
+    if (hour > 23 || minute > 59 || second > 59) return null;
+
+    return `${pad(hour)}:${pad(minute)}:${pad(second)}`;
+}
+
+module.exports = { parseDateInput, parseTimeOfDay };

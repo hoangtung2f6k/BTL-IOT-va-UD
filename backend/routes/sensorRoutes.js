@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../config/db');
-const { parseDateInput } = require('../utils/dateFilter');
+const { parseDateInput, parseTimeOfDay } = require('../utils/dateFilter');
 
 // ============================================
 // GET /api/sensors/latest - Lấy dữ liệu mới nhất (ghép 3 cảm biến thành 1 dòng)
@@ -95,6 +95,8 @@ router.get('/', async (req, res) => {
             value = '',
             from = '',
             to = '',
+            timeFrom = '',
+            timeTo = '',
             sortBy = 'created_at',
             sortOrder = 'DESC'
         } = req.query;
@@ -153,6 +155,21 @@ router.get('/', async (req, res) => {
         if (toAt) {
             where.push('sd.recorded_at <= ?');
             params.push(toAt);
+        }
+
+        // --- Lọc theo khung giờ trong ngày, bỏ qua ngày ---
+        // "15" -> mọi ngày, các bản ghi từ 15:00:00 đến 15:59:59.
+        // TIME() làm mất tác dụng chỉ mục trên recorded_at, nhưng bảng vài chục
+        // nghìn dòng nên vẫn trả về tức thì; đổi lại câu lệnh đọc rất rõ ràng.
+        const todFrom = parseTimeOfDay(timeFrom);
+        const todTo = parseTimeOfDay(timeTo, true);
+        if (todFrom) {
+            where.push('TIME(sd.recorded_at) >= ?');
+            params.push(todFrom);
+        }
+        if (todTo) {
+            where.push('TIME(sd.recorded_at) <= ?');
+            params.push(todTo);
         }
 
         const baseQuery = `
